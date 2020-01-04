@@ -17,20 +17,20 @@ pre-installed container/server).
 7. Demonstrate with tests that the API works as expected.
 
 #### **Implementation Details And Assumptions:**
-- Java is used for implementation.
+- Java 10 is used for implementation.
 - SparkJava is used as framework for creating microservice application.
 - Gson is used for Json Serialization and Deserialization.
 - H2 is used as in-memory database for storing accounts and transfer information.
 - SLF4J is used for Logging.
 - JUnit is used for unit testing the functionality of the application.
-- Only four currencies are supported: EUR, USD, SGD and GBP
+- Supported currencies: EUR, USD, SGD and GBP
 - Currency Conversion rates are currently harcoded in the code. Can be implemented separately.
-- No support for scheduled transactions.
+- No support for standing instructions for transfer.
 - Transfer is only valid if the transfer currency matches with sender or receiver account currency.
 
 #### **Methodology:**
 
-##### **Account Creation:**
+#### **Account Creation:**
 Account creation is supported via `/createAccount` api, which takes an initial amount and the currency of the 
 account. The api returns the corresponding account number of the created account, or an error
 if the request is invalid. The api creates an entry for the new account in the database.
@@ -49,12 +49,12 @@ Output Response:
 }
 ```
 
-##### **Account Fetch Balance:**
+#### **Account Fetch Balance:**
 Account Balance can be fetched via `/balance/:accountId` api. It returns the balance of the account
 in the format as `<CURRENCY> <AMOUNT>`. For instance, if the api is called with `/balance/SampleAccountNumber` , the 
 response will be `SGD 1000`. The api fetches the entry from the database, or returns an error if the account is not present in database.
 
-##### **Transfer Request Creation:**
+#### **Transfer Request Creation:**
 Transfer request can be initiated via `/transfer` api. The api takes the sender account Id, receiver account id,
 the amount and the currency of the transfer. It creates an entry for the transfer in the database
 and put it in `PENDING` state. The api returns a transaction Id, or an error if the request is invalid.
@@ -82,19 +82,19 @@ Output Response Body:
 }
 ```
 
-##### **Transfer Status:**
+#### **Transfer Status:**
 Transfer status can be fetched via `/transferStatus/:transferId` api, which fetches the transfer 
 entry from database, and returns the status as `PENDING`, `SUCCESS` or `FAILURE`.
 
-##### **Transfer Histor for Account:**
+#### **Transfer History for Account:**
 Transfer history for an account can be getched via `/transferHistory/:accountId` api, which fetches 
 the transfer history for an accountId. It fetches all the transactions associated with the account, 
 both credit and debit, and all kinds of transactions status, `PENDING`, `SUCCESS` or `FAILURE`
 
-##### **Transfer Request Execution:**
+#### **Transfer Request Execution:**
 Transfer requests are executed via a scheduled service, which executes the request one at a time.
-The scheduler runs at every specific time-period (currently hardcoded as 10 seconds), and fetches
-the earliest Pending transfer requests based on a throttle limit. This throttle limit makes sure
+The scheduler runs at every specific time-period (currently set as 10 seconds), and fetches
+the Pending transfer requests with earliest creation timestamps based on a throttle limit. This throttle limit makes sure
 not to have heavy dependency on database read and write, and provides reliability.
 
 #### **Steps to Build and Run**
